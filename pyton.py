@@ -6,12 +6,20 @@ import sounddevice as sd
 import numpy as np
 import time
 import os
+import cv2
+import time
+from ultralytics import YOLO
+import logging
+
+# Suppress logging below WARNING level
+logging.getLogger("ultralytics").setLevel(logging.WARNING)
 
 # MQTT settings
 MQTT_BROKER = "ee9de197.ala.us-east-1.emqxsl.com"  # Replace with your broker IP
 MQTT_PORT = 8883  # Default MQTT port
 MQTT_TOPIC_TEMPERATURE = "esp/temperature"
 MQTT_TOPIC_VOICE = "esp/voice"
+MQTT_TOPIC_WEBCAM = "esp/webcam"
 # InfluxDB settings for 2.x
 INFLUXDB_URL = 'http://172.20.10.3:8086'  # Replace with your InfluxDB URL
 INFLUXDB_TOKEN = 'A22odWMhuYMPvJjM-yiGwUDKs0oLn5AcitTm_JQ0XVQZZwFMaarnliD4XPNsLoWn0T_Wu90C0fMBocSLl1pujw=='
@@ -57,8 +65,6 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(MQTT_TOPIC_TEMPERATURE)
     # client.subscribe(MQTT_TOPIC_VOICE)
 
-def publish_transcription(mqtt_client, transcription):
-    mqtt_client.publish(MQTT_TOPIC_VOICE, transcription)
 
 def main():
     # Create MQTT client
@@ -80,7 +86,48 @@ def main():
     duration = 3  # Duration in seconds
     fs = 16000    # Sampling rate
 
+    # Load the YOLOv8 model (default is the pretrained COCO model)
+    model = YOLO('yolov8n.pt')  # You can use 'yolov8s.pt', 'yolov8m.pt', etc., for larger models
+    
+    # Open the webcam
+    cap = cv2.VideoCapture(0)
+    
+    if not cap.isOpened():
+        print("Error: Webcam not found!")
+        return
+
+    print("Starting webcam detection. Reading frames every 1 second. Press Ctrl+C to stop.")
+
     while True:  # Run indefinitely
+
+        ret, frame = cap.read()
+        if not ret:
+            print("Error: Unable to capture frame.")
+            break
+
+        # Perform detection
+        results = model(frame)
+        
+        # Extract and display detected objects
+        detected_objects = []
+        for result in results:
+            for box in result.boxes:
+                class_id = int(box.cls)  # Class ID of the object
+                confidence = box.conf  # Confidence score
+                class_name = model.names[class_id]  # Class name (e.g., 'person', 'car')
+                detected_objects.append(class_name)
+
+
+        detected_objects_str = ', '.join(detected_objects) if detected_objects else 'None'
+        print(f"Detected objects: {detected_objects_str}")
+        
+        # Publish detected objects as plain text to MQTT
+        mqtt_client.publish(MQTT_TOPIC_WEBCAM, detected_objects_str)
+        
+        # Annotate frame with detection results (optional, not displayed here)
+        annotated_frame = results[0].plot()
+        
+
         print(f"Recording for {duration} seconds...")
 
         # Record audio from the microphone
@@ -98,10 +145,13 @@ def main():
         print(transcription)
 
         # Publish the transcription to the MQTT broker
-        publish_transcription(mqtt_client, transcription)
+        mqtt_client.publish(MQTT_TOPIC_VOICE, transcription)
 
         # Delay between recordings
         time.sleep(1)  # Adjust as necessary
+
+    cap.release()
+    cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()
