@@ -61,13 +61,26 @@ Open your browser and navigate to http://localhost:8086
     except Exception as e:
         print(f"Error: {e}")
 
-2. Writing Data to InfluxDB
+## 2. Writing Data to InfluxDB
 ```
     def save_to_influxdb(temperature):
     point = Point("temperature_reading").field("value", temperature)
     write_api.write(bucket=INFLUXDB_BUCKET, record=point)
 ```
-4. Whisper Transcription
+## 3. YOLO Object Detection
+```
+ results = model(frame)
+
+# Extract and display detected objects
+detected_objects = []
+for result in results:
+    for box in result.boxes:
+        class_id = int(box.cls)  # Class ID of the object
+        confidence = box.conf  # Confidence score
+        class_name = model.names[class_id]  # Class name (e.g., 'person', 'car')
+        detected_objects.append(class_name)
+```
+## 4. Whisper Transcription
    ```
     def get_transcribe(audio_data, language: str = 'pl'):
     return model.transcribe(audio=audio_data, language=language, verbose=True)
