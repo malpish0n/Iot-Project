@@ -102,3 +102,6 @@ The Arduino displays the received information on an LCD screen.
 ### Dockerized System:
 
 The entire application is containerized with Docker, ensuring ease of deployment and portability.
+
+## Authors:
+Arkadiusz Kasztelan, Hubert Marek
