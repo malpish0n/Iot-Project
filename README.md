@@ -48,6 +48,32 @@ d) Verify system functionality
 
 Open your browser and navigate to http://localhost:8086
 
+## 1. Handling MQTT Messages
+    def on_message(client, userdata, message):
+    try:
+        # Decode and convert payload to float
+        temperature = float(message.payload.decode("utf-8"))
+        print(f"Received temperature: {temperature}")
+
+        # Save the temperature to InfluxDB
+        save_to_influxdb(temperature)
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+2. Writing Data to InfluxDB
+```
+    def save_to_influxdb(temperature):
+    point = Point("temperature_reading").field("value", temperature)
+    write_api.write(bucket=INFLUXDB_BUCKET, record=point)
+```
+4. Whisper Transcription
+   ```
+    def get_transcribe(audio_data, language: str = 'pl'):
+    return model.transcribe(audio=audio_data, language=language, verbose=True)
+   ```
+
+
 ## Final Integration Workflow
 ### Data Sources:
 
