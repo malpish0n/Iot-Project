@@ -109,7 +109,7 @@ void connectToMQTT() {
         if (mqtt_client.connect(client_id.c_str(), mqtt_username, mqtt_password)) {
             Serial.println("Connected to MQTT broker");
             // Subscribe to both topics
-            mqtt_client.subscribe(temperature_topic);
+            //mqtt_client.subscribe(temperature_topic);
             mqtt_client.subscribe(voice_topic);
             mqtt_client.subscribe(webcam_topic);
             
@@ -136,8 +136,18 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
 
     // Handle messages based on the topic
     if (strcmp(topic, webcam_topic) == 0) {
-        lcd.clear(); // Clear the LCD
+        //lcd.clear(); // Clear the LCD
         lcd.setCursor(0, 0); // Set cursor to the first line
+        lcd.print("                ");
+        lcd.setCursor(0, 0); // Set cursor to the first line
+        lcd.print(message); // Print the message on the LCD
+    }
+    // Handle messages based on the topic
+    if (strcmp(topic, voice_topic) == 0) {
+        //lcd.clear(); // Clear the LCD
+        lcd.setCursor(0, 1); // Set cursor to the first line
+        lcd.print("                ");
+        lcd.setCursor(0, 1); // Set cursor to the first line
         lcd.print(message); // Print the message on the LCD
     }
 }
