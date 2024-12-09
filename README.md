@@ -103,7 +103,7 @@ The Arduino displays the received information on an LCD screen.
 
 The entire application is containerized with Docker, ensuring ease of deployment and portability.
 
-## Flowchart
+## Flowchart:
 
 
 ![pobrany plik](https://github.com/user-attachments/assets/a380ad31-0f16-493f-9408-6b2f8fdb8036)
