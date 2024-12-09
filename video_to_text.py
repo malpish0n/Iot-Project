@@ -80,7 +80,7 @@ def main():
         # Annotate frame with detection results (optional, not displayed here)
         annotated_frame = results[0].plot()
         
-        time.sleep(1)
+        time.sleep(3)
 
     cap.release()
     cv2.destroyAllWindows()
